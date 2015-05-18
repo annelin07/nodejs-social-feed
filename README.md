@@ -30,9 +30,6 @@ Time spent: `3 hours`
 
 ### Walkthrough
 
-###
-- to regiester twitter app https://apps.twitter.com/app/new
-
 ![Video Walkthrough](...)
 
 
