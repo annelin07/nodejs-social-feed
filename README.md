@@ -3,7 +3,7 @@
 This is a aggregated Social Feed app for consumer Facebook, Google, and Twitter in a single Timeline.
 
 
-Time spent: `3 hours`
+Time spent: `8 hours`
 
 ### Features
 
