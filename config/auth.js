@@ -13,8 +13,8 @@ module.exports = {
             'callbackUrl': 'http://socialauthenticator.com:8000/auth/twitter/callback'
         },
         'google': {
-            'consumerKey': '937472572686-8hknabteklrev9169381tpb47mj3g0bb.apps.googleusercontent.com',
-            'consumerSecret': 'bTrI3Xrh2Dj7OeZF5tb2Wp9E',
+            'clientID': '937472572686-8hknabteklrev9169381tpb47mj3g0bb.apps.googleusercontent.com',
+            'clientSecret': 'bTrI3Xrh2Dj7OeZF5tb2Wp9E',
             'callbackUrl': 'http://socialauthenticator.com:8000/auth/google/callback'
         }
     }

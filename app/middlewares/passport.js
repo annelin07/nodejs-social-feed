@@ -4,8 +4,8 @@ let FacebookStrategy = require('passport-facebook').Strategy
 let TwitterStrategy = require('passport-twitter').Strategy
 let nodeifyit = require('nodeifyit')
 let User = require('../models/user')
-//let GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
-let GoogleStrategy = require('passport-google-oauth').Strategy
+let GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
+//let GoogleStrategy = require('passport-google-oauth').Strategy
 
 
 //TODO:
@@ -66,8 +66,8 @@ function configure(configAuth) {
     }, 'twitter')
 
     useExternalPassportStrategy(GoogleStrategy, {
-        consumerKey: configAuth.google.consumerKey,
-        consumerSecret: configAuth.google.consumerSecret,
+        clientID: configAuth.google.clientID,
+        clientSecret: configAuth.google.clientSecret,
         callbackURL: configAuth.google.callbackUrl
     }, 'google')
 
