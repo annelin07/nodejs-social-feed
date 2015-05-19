@@ -61,9 +61,9 @@ module.exports = (app) => {
 
     app.get('/timeline', isLoggedIn, then(async(req, res) => {
         try {
-            console.log("in timeline")
-            console.log("req.user.twitter", req.user.twitter)
-            console.log("twitterConfig", twitterConfig)
+            // console.log("in timeline")
+            // console.log("req.user.twitter", req.user.twitter)
+            // console.log("twitterConfig", twitterConfig)
             let twitterClient = new Twitter({
                 consumer_key: twitterConfig.consumerKey,
                 consumer_secret: twitterConfig.consumerSecret,

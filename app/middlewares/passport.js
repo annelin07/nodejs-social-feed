@@ -25,7 +25,7 @@ function useExternalPassportStrategy(OauthStrategy, config, accountType) {
     function authCB(req, token, _ignored_, account) {
         let accountID = account.id
         let idCol = accountType + ".id"
-        console.log("authCB account, idCol", account, idCol)
+        // console.log("authCB account, idCol", account, idCol)
 
         let user = await User.promise.findOne({
                  idCol: accountID
@@ -50,7 +50,7 @@ function configure(configAuth) {
         return await User.promise.findById(id)
     }))
 
-    console.log("configAuth", configAuth.twitter)
+    //console.log("configAuth", configAuth.twitter)
 
     useExternalPassportStrategy(FacebookStrategy, {
         clientID: configAuth.facebook.consumerKey,
