@@ -27,16 +27,28 @@ function useExternalPassportStrategy(OauthStrategy, config, accountType) {
         let idCol = accountType + ".id"
         // console.log("authCB account, idCol", account, idCol)
 
-        let user = await User.promise.findOne({
-                 idCol: accountID
-             })
+        let user
+        if (req.user) {
+            user = await User.promise.findById(req.user.id)
+        } else {
+            //if such user exist in database for facebook or twitter
+            user = await User.promise.findOne({
+                idCol: accountID
+            })
+
+        }
+         console.log("req user", req.user)
+
         if (!user) {
             user = new User({})
         }
-        user[accountType].id = accountID
-        user[accountType].token = token
-        user[accountType].secret = _ignored_
-        user[accountType].name = account.displayName
+        user[accountType] = {
+            id: accountID,
+            token: token,
+            secret: _ignored_,
+            name: account.displayName
+        }
+
 
         return await user.save()
     }

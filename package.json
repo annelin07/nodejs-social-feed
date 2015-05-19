@@ -13,6 +13,7 @@
     "express": "^4.0.0",
     "express-session": "^1.11.1",
     "express-then": "^1.0.2",
+    "fb": "^0.7.0",
     "lodash": "^3.8.0",
     "mongoose": "^4.0.3",
     "morgan": "^1.0.0",
