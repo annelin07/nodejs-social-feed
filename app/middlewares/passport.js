@@ -5,7 +5,6 @@ let TwitterStrategy = require('passport-twitter').Strategy
 let nodeifyit = require('nodeifyit')
 let User = require('../models/user')
 let GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
-//let GoogleStrategy = require('passport-google-oauth').Strategy
 
 
 //TODO:
