@@ -232,7 +232,6 @@ module.exports = (app) => {
             access_token_secret: req.user.twitter.secret
         })
         let id = req.params.id
-        console.log("><req.body", req.body)
         let text = req.body.share
         if (text.length > 140) {
             return req.flash('error', 'status is over 140 chars')
@@ -244,7 +243,7 @@ module.exports = (app) => {
 
             await twitterClient.promise.post('statuses/retweet/' + id, {text})
         } catch (e) {
-            console.log("><E", e)
+            console.log("Error", e)
         }
         return res.end()
     }))
