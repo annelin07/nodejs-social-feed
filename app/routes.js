@@ -190,6 +190,19 @@ module.exports = (app) => {
         res.end()
     }))
 
+    app.post('/twitter/unlike/:id', isLoggedIn, then(async(req, res) => {
+        let twitterClient = new Twitter({
+            consumer_key: twitterConfig.consumerKey,
+            consumer_secret: twitterConfig.consumerSecret,
+            access_token_key: req.user.twitter.token,
+            access_token_secret: req.user.twitter.secret
+        })
+        let id = req.params.id
+
+        await twitterClient.promise.post('favorites/destroy', {id})
+
+        res.end()
+    }))
 
     app.post('/facebook/like/:id', isLoggedIn, then(async(req, res) => {
         let id = req.params.id
@@ -207,20 +220,7 @@ module.exports = (app) => {
     }))
 
 
-    app.post('/twitter/unlike/:id', isLoggedIn, then(async(req, res) => {
-        let twitterClient = new Twitter({
-            consumer_key: twitterConfig.consumerKey,
-            consumer_secret: twitterConfig.consumerSecret,
-            access_token_key: req.user.twitter.token,
-            access_token_secret: req.user.twitter.secret
-        })
-        let id = req.params.id
-
-        await twitterClient.promise.post('favorites/destroy', {id})
-
-        res.end()
-    }))
-    app.get('/reply/:id', isLoggedIn, then(async(req, res) => {
+    app.get('/twitter/reply/:id', isLoggedIn, then(async(req, res) => {
         let twitterClient = new Twitter({
             consumer_key: twitterConfig.consumerKey,
             consumer_secret: twitterConfig.consumerSecret,
@@ -241,11 +241,12 @@ module.exports = (app) => {
         }
 
         res.render('reply.ejs', {
-            post: tweet
+            post: tweet,
+            acctType: 'twitter'
         })
     }))
 
-    app.post('/reply/:id', isLoggedIn, then(async(req, res) => {
+    app.post('/twitter/reply/:id', isLoggedIn, then(async(req, res) => {
         let twitterClient = new Twitter({
             consumer_key: twitterConfig.consumerKey,
             consumer_secret: twitterConfig.consumerSecret,
@@ -268,8 +269,37 @@ module.exports = (app) => {
         return res.redirect('/timeline')
     }))
 
+    app.get('/facebook/reply/:id', isLoggedIn, then(async(req, res) => {
+        let id = req.params.id
+        let post
+        post = {
+            id: id,
+            // image: , //post.picture,
+            text: req.query.text, //post.story || post.message,
+            name: req.query.name, //post.from.name,
+            image: decodeURIComponent(req.query.img) + '',
+            // username: "@" + tweet.user.screen_name,
+            network: networks.facebook
+        }
+        console.log("post.pic", )
 
-    app.get('/share/:id', isLoggedIn, then(async(req, res) => {
+        res.render('reply.ejs', {
+            post: post,
+            acctType: 'facebook'
+        })
+    }))
+
+    // TODO: post facebook reply
+    // app.post('/facebook/reply/:id', isLoggedIn, then(async(req, res) => {
+    //     let id = req.params.id
+    //     let uri = `/${id}/comments`
+    //     await new Promise((resolve, reject) => FB.api(uri, 'post', {
+    //             access_token: req.user.facebook.token}, resolve))
+    //       res.end()
+    // }))
+
+
+    app.get('/twitter/share/:id', isLoggedIn, then(async(req, res) => {
         let twitterClient = new Twitter({
             consumer_key: twitterConfig.consumerKey,
             consumer_secret: twitterConfig.consumerSecret,
@@ -290,10 +320,11 @@ module.exports = (app) => {
         }
 
         res.render('share.ejs', {
-            post: tweet
+            post: tweet,
+            acctType: 'twitter'
         })
     }))
-    app.post('/share/:id', isLoggedIn, then(async(req, res) => {
+    app.post('/twitter/share/:id', isLoggedIn, then(async(req, res) => {
         let twitterClient = new Twitter({
             consumer_key: twitterConfig.consumerKey,
             consumer_secret: twitterConfig.consumerSecret,
@@ -309,7 +340,6 @@ module.exports = (app) => {
             return req.flash('error', 'status is empty')
         }
         try {
-
             await twitterClient.promise.post('statuses/retweet/' + id, {text})
         } catch (e) {
             console.log("Error", e)
@@ -317,11 +347,40 @@ module.exports = (app) => {
         return res.redirect('/timeline')
     }))
 
+    app.get('/facebook/share/:id', isLoggedIn, then(async(req, res) => {
+        let id = req.params.id
+        let post
+        post = {
+            id: id,
+            // image: , //post.picture,
+            text: req.query.text, //post.story || post.message,
+            name: req.query.name, //post.from.name,
+            image: decodeURIComponent(req.query.img) + '',
+            // username: "@" + tweet.user.screen_name,
+            network: networks.facebook
+        }
+
+        res.render('share.ejs', {
+            post: post,
+            acctType: 'facebook'
+        })
+    }))
+
+    // TODO: post facebook share
+
     app.get('/auth/twitter', passport.authenticate('twitter'))
 
     app.get('/auth/twitter/callback', passport.authenticate('twitter', {
         successRedirect: '/profile',
         failureRedirect: '/login',
+        failureFlash: true
+    }))
+
+  // Authorization route & Callback URL
+    app.get('/connect/twitter', passport.authorize('twitter'))
+    app.get('/connect/twitter/callback', passport.authorize('twitter', {
+        successRedirect: '/profile',
+        failureRedirect: '/profile',
         failureFlash: true
     }))
 

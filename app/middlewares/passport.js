@@ -49,7 +49,6 @@ function useExternalPassportStrategy(OauthStrategy, config, accountType) {
             name: account.displayName
         }
 
-
         return await user.save()
     }
 }
