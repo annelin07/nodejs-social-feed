@@ -73,7 +73,6 @@ module.exports = (app) => {
 
     app.get('/timeline', isLoggedIn, then(async(req, res) => {
         try {
-            console.log("timeline")
             let twitterClient = new Twitter({
                 consumer_key: twitterConfig.consumerKey,
                 consumer_secret: twitterConfig.consumerSecret,
@@ -82,6 +81,7 @@ module.exports = (app) => {
             })
             let [tweets, ] = await twitterClient.promise.get('/statuses/home_timeline')
             tweets = tweets.map(tweet => {
+                //console.log('tweet', tweet)
                 return {
                     id: tweet.id_str,
                     image: tweet.user.profile_image_url,
@@ -89,6 +89,7 @@ module.exports = (app) => {
                     name: tweet.user.name,
                     username: "@" + tweet.user.screen_name,
                     liked: tweet.favorited,
+                    date: new Date(tweet.created_at),
                     network: networks.twitter
                 }
             })
@@ -97,6 +98,7 @@ module.exports = (app) => {
             let fbPosts = fbResponse.data
             let fbPostsProcessed = []
             for (let post of fbPosts) {
+                //console.log("FB post", post)
                 let userId = post.from.id
                 let picUri = '/' + userId + '/picture'
                 let fbResponse = await new Promise((resolve, reject) => FB.api(picUri, {redirect: false}, resolve))
@@ -115,6 +117,7 @@ module.exports = (app) => {
                     name: '@' + post.from.name,
                     pic: post.picture,
                     liked: liked,
+                    date: new Date(post.created_time),
                     network: networks.facebook
 
                 })
@@ -122,7 +125,7 @@ module.exports = (app) => {
 
             let aggregatedPosts = _.union(fbPostsProcessed, tweets)
             res.render('timeline.ejs', {
-                posts: aggregatedPosts
+                posts: aggregatedPosts.slice(0, 20)
             })
         } catch (e) {
             console.log(e)
@@ -136,7 +139,6 @@ module.exports = (app) => {
     })
 
    app.post('/compose', isLoggedIn, then(async(req, res) => {
-        console.log("req.body", req.body)
         let text = req.body.reply
         let postTo = req.body.postTo
         if (postTo.length == 0) {
@@ -155,8 +157,6 @@ module.exports = (app) => {
             access_token_key: req.user.twitter.token,
             access_token_secret: req.user.twitter.secret
         })
-        console.log("/compose, postTo", postTo)
-        //TODO use async promise.all
         if (postTo.indexOf('twitter') >= 0) {
             try {
                 await twitterClient.promise.post('statuses/update', {
@@ -256,10 +256,10 @@ module.exports = (app) => {
         let id = req.params.id
         let text = req.body.reply
         if (text.length > 140) {
-            return req.flash('error', 'status is over 140 chars')
+            return req.flash('error', 'reply text is over 140 chars')
         }
         if (!text.length) {
-            return req.flash('error', 'status is empty')
+            return req.flash('error', 'reply text is empty')
         }
 
         await twitterClient.promise.post('statuses/update', {
@@ -289,14 +289,17 @@ module.exports = (app) => {
         })
     }))
 
-    // TODO: post facebook reply
-    // app.post('/facebook/reply/:id', isLoggedIn, then(async(req, res) => {
-    //     let id = req.params.id
-    //     let uri = `/${id}/comments`
-    //     await new Promise((resolve, reject) => FB.api(uri, 'post', {
-    //             access_token: req.user.facebook.token}, resolve))
-    //       res.end()
-    // }))
+    app.post('/facebook/reply/:id', isLoggedIn, then(async(req, res) => {
+        let id = req.params.id
+        if (!req.body.reply.length) {
+            return req.flash('error', 'reply text is empty')
+        }
+        let uri = `/${id}/comments`
+        await new Promise((resolve, reject) => FB.api(uri, 'post', {
+                message: req.body.reply,
+                access_token: req.user.facebook.token}, resolve))
+        return res.redirect('/timeline')
+    }))
 
 
     app.get('/twitter/share/:id', isLoggedIn, then(async(req, res) => {
@@ -334,10 +337,10 @@ module.exports = (app) => {
         let id = req.params.id
         let text = req.body.share
         if (text.length > 140) {
-            return req.flash('error', 'status is over 140 chars')
+            return req.flash('error', 'share text is over 140 chars')
         }
         if (!text.length) {
-            return req.flash('error', 'status is empty')
+            return req.flash('error', 'share text is empty')
         }
         try {
             await twitterClient.promise.post('statuses/retweet/' + id, {text})
@@ -356,7 +359,6 @@ module.exports = (app) => {
             text: req.query.text, //post.story || post.message,
             name: req.query.name, //post.from.name,
             image: decodeURIComponent(req.query.img) + '',
-            // username: "@" + tweet.user.screen_name,
             network: networks.facebook
         }
 
@@ -366,7 +368,23 @@ module.exports = (app) => {
         })
     }))
 
-    // TODO: post facebook share
+  app.post('/facebook/share/:id', isLoggedIn, then(async(req, res) => {
+        let id = req.params.id
+        let text = req.body.share
+        if (!text.length) {
+            return req.flash('error', 'share text is empty')
+        }
+        // construct id of 112345678_987654321 into
+        // https://www.facebook.com/12345678/posts/987654321
+        let id_fragments = id.split('_')
+        let link = "https://www.facebook.com/" + id_fragments[0] +'/posts/' +  id_fragments[1]
+        console.log("share link", link)
+        await new Promise((resolve, reject) => FB.api('/me/links', 'post', {
+                link: link,
+                access_token: req.user.facebook.token}, resolve))
+        return res.redirect('/timeline')
+    }))
+
 
     app.get('/auth/twitter', passport.authenticate('twitter'))
 
